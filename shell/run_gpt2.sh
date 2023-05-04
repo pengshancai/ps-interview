@@ -1,7 +1,7 @@
-python run_llama.py \
-    --train_file path_to_train_file \
-    --validation_file path_to_validation_file \
+python run_clm.py \
+    --train_file ../ps-interview_/data/processed_clm/train.json \
+    --validation_file ../ps-interview_/data/processed_clm/valid.json \
     --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 8 \
     --model_name_or_path gpt2 \
-    --output_dir ../ps_interview/dump/gpt2_1.0
+    --output_dir ../ps-interview_/dump/gpt2_1.0
