@@ -360,7 +360,7 @@ def main():
             "You are instantiating a new tokenizer from scratch. This is not supported by this script."
             "You can do it from another script, save it, and load it from here, using --tokenizer_name."
         )
-    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+    tokenizer.add_special_tokens({'pad_token': '[PAD]', 'eos_token': '[EOS]'})
 
     if args.model_name_or_path:
         model = AutoModelForCausalLM.from_pretrained(

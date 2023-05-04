@@ -33,7 +33,7 @@ for fname in fnames:
         for line in lines:
             src, tgts = process_line(line)
             for tgt in tgts:
-                text = "\"%s\" Summarize the customer's issue in the above dialog in one sentence. \"%s\"" % (src, tgt)
+                text = "\"%s\" Summarize the customer's issue in the above dialog in one sentence. \"%s\" [EOS]" % (src, tgt)
                 f.write({
                     'text': text
                 })
