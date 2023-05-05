@@ -242,7 +242,7 @@ def main():
     args = parse_args()
     with open('../ps-interview_/za/args/args_llama_no_trainer.pkl', 'wb') as f:
         pickle.dump(args, f)
-    exit()
+    # exit()
 
     # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
     # information sent is the one passed as arguments along with your Python/PyTorch versions.
