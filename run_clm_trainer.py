@@ -206,13 +206,7 @@ class DataTrainingArguments:
 def main():
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-    with open(training_args.output_dir + 'args.pkl', 'wb') as f:
-        args = {
-            'model_args': model_args,
-            'data_args': data_args,
-            'training_args': training_args
-        }
-        pickle.dump(args, f)
+
     # Setup logging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -251,6 +245,14 @@ def main():
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
+    # Save hyper-parameters
+    with open(training_args.output_dir + 'args.pkl', 'wb') as f:
+        args = {
+            'model_args': model_args,
+            'data_args': data_args,
+            'training_args': training_args
+        }
+        pickle.dump(args, f)
 
     # Set seed before initializing model.
     set_seed(training_args.seed)
