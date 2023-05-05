@@ -30,6 +30,7 @@ from transformers.testing_utils import CaptureLogger
 from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
+from peft import LoraConfig, TaskType, get_peft_model, PeftModel
 
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
@@ -117,6 +118,14 @@ class ModelArguments:
             )
         },
     )
+    do_lora: bool = field(
+        default=False,
+        metadata={"help": "do parameter efficient finetuning - lora or not"},
+    )
+    peft_model_path: str = field(
+        default=None,
+        metadata={"help": "path to saved peft model"},
+    )
 
     def __post_init__(self):
         if self.config_overrides is not None and (self.config_name is not None or self.model_name_or_path is not None):
@@ -186,6 +195,9 @@ class DataTrainingArguments:
     )
     keep_linebreaks: bool = field(
         default=True, metadata={"help": "Whether to keep line breaks when using TXT files or not."}
+    )
+    max_length: int = field(
+        default=512, metadata={"help": "Max sequence length"}
     )
 
     def __post_init__(self):
@@ -333,6 +345,33 @@ def main():
                 **dataset_args,
             )
 
+    # Aux functions
+    IGNORE_INDEX = -100
+    DEFAULT_PAD_TOKEN = "[PAD]"
+    DEFAULT_EOS_TOKEN = "</s>"
+    DEFAULT_BOS_TOKEN = "</s>"
+    DEFAULT_UNK_TOKEN = "</s>"
+
+    def smart_tokenizer_and_embedding_resize(
+            special_tokens_dict,
+            tokenizer,
+            model,
+    ):
+        """Resize tokenizer and embedding.
+        Note: This is the unoptimized version that may make your embedding size not be divisible by 64.
+        """
+        num_new_tokens = tokenizer.add_special_tokens(special_tokens_dict)
+        model.resize_token_embeddings(len(tokenizer))
+        if num_new_tokens > 0:
+            input_embeddings = model.get_input_embeddings().weight.data
+            output_embeddings = model.get_output_embeddings().weight.data
+            input_embeddings_avg = input_embeddings[:-num_new_tokens].mean(
+                dim=0, keepdim=True)
+            output_embeddings_avg = output_embeddings[:-num_new_tokens].mean(
+                dim=0, keepdim=True)
+            input_embeddings[-num_new_tokens:] = input_embeddings_avg
+            output_embeddings[-num_new_tokens:] = output_embeddings_avg
+
     # Config
     config_kwargs = {
         "cache_dir": model_args.cache_dir,
@@ -348,7 +387,6 @@ def main():
         "use_auth_token": True if model_args.use_auth_token else None,
     }
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path, **tokenizer_kwargs)
-    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
     # Model
     torch_dtype = (
         model_args.torch_dtype
@@ -365,6 +403,30 @@ def main():
         torch_dtype=torch_dtype,
         low_cpu_mem_usage=model_args.low_cpu_mem_usage,
     )
+    if tokenizer.pad_token is None:
+        smart_tokenizer_and_embedding_resize(
+            special_tokens_dict=dict(pad_token=DEFAULT_PAD_TOKEN),
+            tokenizer=tokenizer,
+            model=model,
+        )
+    if "llama" in model_args.model_name_or_path:
+        tokenizer.add_special_tokens({
+            "eos_token": DEFAULT_EOS_TOKEN,
+            "bos_token": DEFAULT_BOS_TOKEN,
+            "unk_token": DEFAULT_UNK_TOKEN,
+        })
+
+    if model_args.do_lora:
+        if model_args.peft_model_path is not None:
+            peft_config = LoraConfig.from_pretrained(model_args.peft_model_path)
+            model = PeftModel.from_pretrained(model, model_args.peft_model_path)
+        else:
+            peft_config = LoraConfig(
+                task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1, target_modules=["q_proj", "v_proj"], bias="none",
+            )
+            model = get_peft_model(model, peft_config)
+        model.print_trainable_parameters()
+
 
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.
@@ -380,11 +442,11 @@ def main():
         column_names = list(raw_datasets["validation"].features)
     text_column_name = "text" if "text" in column_names else column_names[0]
 
-    # since this will be pickled to avoid _LazyModule error in Hasher force logger loading before tokenize_function
-    tok_logger = transformers.utils.logging.get_logger("transformers.tokenization_utils_base")
+    # # since this will be pickled to avoid _LazyModule error in Hasher force logger loading before tokenize_function
+    # tok_logger = transformers.utils.logging.get_logger("transformers.tokenization_utils_base")
 
     def tokenize_function(examples):
-        output = tokenizer(examples[text_column_name])
+        output = tokenizer(examples[text_column_name], max_length=data_args.max_length)
         return output
 
     with training_args.main_process_first(desc="dataset map tokenization"):
@@ -429,7 +491,7 @@ def main():
         else:
             lm_datasets = tokenized_datasets.map(
                 add_labels,
-                 batched=True,
+                batched=True,
             )
 
     if training_args.do_train:

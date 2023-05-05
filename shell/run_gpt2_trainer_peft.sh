@@ -6,7 +6,8 @@ CUDA_VISIBLE_DEVICES=7 python run_clm_trainer.py \
     --per_device_eval_batch_size 4 \
     --do_train \
     --do_eval \
-    --output_dir ../ps-interview_/dump/gpt2_1.1/ \
+    --output_dir ../ps-interview_/dump/gpt2_1.3/ \
     --num_train_epochs 5 \
+    --do_lora \
     --fp16
 
