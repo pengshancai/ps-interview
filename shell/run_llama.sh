@@ -6,4 +6,6 @@ CUDA_VISIBLE_DEVICES=0 python run_clm.py \
     --model_name_or_path decapoda-research/llama-7b-hf \
     --output_dir ../ps-interview_/dump/llama_1.0 \
     --num_train_epochs 5 \
+    --do_lora \
+    --max_length 100 \
     --overwrite_cache

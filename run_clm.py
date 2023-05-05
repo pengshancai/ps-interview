@@ -96,6 +96,11 @@ def parse_args():
         help="If passed, will use a slow tokenizer (not backed by the 🤗 Tokenizers library).",
     )
     parser.add_argument(
+        "--max_length",
+        type=int,
+        default=512,
+    )
+    parser.add_argument(
         "--per_device_train_batch_size",
         type=int,
         default=8,
@@ -377,7 +382,7 @@ def main():
     text_column_name = "text" if "text" in column_names else column_names[0]
 
     def tokenize_function(examples):
-        return tokenizer(examples[text_column_name])
+        return tokenizer(examples[text_column_name], max_length=args.max_length)
 
     with accelerator.main_process_first():
         tokenized_datasets = raw_datasets.map(
