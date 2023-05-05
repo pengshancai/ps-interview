@@ -31,6 +31,7 @@ from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 from peft import LoraConfig, TaskType, get_peft_model, PeftModel
+from transformers import LlamaTokenizer, LlamaForCausalLM
 
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
@@ -386,23 +387,20 @@ def main():
         "revision": model_args.model_revision,
         "use_auth_token": True if model_args.use_auth_token else None,
     }
-    tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path, **tokenizer_kwargs)
-    # Model
-    torch_dtype = (
-        model_args.torch_dtype
-        if model_args.torch_dtype in ["auto", None]
-        else getattr(torch, model_args.torch_dtype)
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        model_args.model_name_or_path,
-        from_tf=bool(".ckpt" in model_args.model_name_or_path),
-        config=config,
-        cache_dir=model_args.cache_dir,
-        revision=model_args.model_revision,
-        use_auth_token=True if model_args.use_auth_token else None,
-        torch_dtype=torch_dtype,
-        low_cpu_mem_usage=model_args.low_cpu_mem_usage,
-    )
+    if not 'llama' in model_args.model_name_or_path:
+        tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path, **tokenizer_kwargs)
+        model = AutoModelForCausalLM.from_pretrained(
+            model_args.model_name_or_path,
+            from_tf=bool(".ckpt" in model_args.model_name_or_path),
+            config=config,
+            cache_dir=model_args.cache_dir,
+            revision=model_args.model_revision,
+            use_auth_token=True if model_args.use_auth_token else None,
+            low_cpu_mem_usage=model_args.low_cpu_mem_usage,
+        )
+    else:
+        tokenizer = LlamaTokenizer.from_pretrained(model_args.model_name_or_path)
+        model = LlamaForCausalLM.from_pretrained(model_args.model_name_or_path)
     if tokenizer.pad_token is None:
         smart_tokenizer_and_embedding_resize(
             special_tokens_dict=dict(pad_token=DEFAULT_PAD_TOKEN),

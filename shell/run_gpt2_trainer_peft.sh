@@ -9,5 +9,6 @@ CUDA_VISIBLE_DEVICES=7 python run_clm_trainer.py \
     --output_dir ../ps-interview_/dump/gpt2_1.3/ \
     --num_train_epochs 5 \
     --do_lora \
+    --max_length 100 \
     --fp16
 
