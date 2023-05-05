@@ -31,7 +31,8 @@ from transformers import (
 )
 from transformers.utils import check_min_version, get_full_repo_name, send_example_telemetry
 from transformers.utils.versions import require_version
-from transformers import AutoTokenizer, LlamaForCausalLM
+from transformers import AutoTokenizer
+from transformers import LlamaTokenizer, LlamaForCausalLM
 import pickle
 
 
@@ -336,42 +337,23 @@ def main():
                 **dataset_args,
             )
 
-    # See more about loading any type of standard or custom dataset (from files, python dict, pandas DataFrame, etc) at
-    # https://huggingface.co/docs/datasets/loading_datasets.html.
-
-    # Load pretrained model and tokenizer
-    #
-    # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
-    # download model & vocab.
-    if args.config_name:
-        config = AutoConfig.from_pretrained(args.config_name)
-    elif args.model_name_or_path:
+    if 'llama' in args.model_name_or_path:
+        tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
+    else:
         config = AutoConfig.from_pretrained(args.model_name_or_path)
-    else:
-        config = CONFIG_MAPPING[args.model_type]()
-        logger.warning("You are instantiating a new config instance from scratch.")
-
-    if args.tokenizer_name:
-        tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_name, use_fast=not args.use_slow_tokenizer)
-    elif args.model_name_or_path:
         tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=not args.use_slow_tokenizer)
-    else:
-        raise ValueError(
-            "You are instantiating a new tokenizer from scratch. This is not supported by this script."
-            "You can do it from another script, save it, and load it from here, using --tokenizer_name."
-        )
     tokenizer.add_special_tokens({'pad_token': '[PAD]', 'eos_token': '[EOS]'})
-
-    if args.model_name_or_path:
+    if 'llama' in args.model_name_or_path:
+        model = LlamaForCausalLM.from_pretrained("decapoda-research/llama-7b-hf")
+    else:
         model = AutoModelForCausalLM.from_pretrained(
             args.model_name_or_path,
             from_tf=bool(".ckpt" in args.model_name_or_path),
             config=config,
             low_cpu_mem_usage=args.low_cpu_mem_usage,
         )
-    else:
-        logger.info("Training new model from scratch")
-        model = AutoModelForCausalLM.from_config(config)
+
+
 
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.

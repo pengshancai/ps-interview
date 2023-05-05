@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=1 python run_clm.py \
+CUDA_VISIBLE_DEVICES=0 python run_clm.py \
     --train_file ../ps-interview_/data/processed_clm/train.json \
     --validation_file ../ps-interview_/data/processed_clm/valid.json \
     --per_device_train_batch_size 1 \
