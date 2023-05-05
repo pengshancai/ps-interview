@@ -27,21 +27,30 @@ def process_line(line):
 fnames = os.listdir(input_dir)
 for fname in fnames:
     split = fname[11:-4]
+    if split == 'test':
+        continue
     with open(input_dir + fname, mode='r') as f_in:
         lines = [line for line in csv.reader(f_in)][1:]
     with jsonlines.open(output_dir + '%s.json' % split, 'w') as f:
         for line in lines:
             src, tgts = process_line(line)
             for tgt in tgts:
-                text = "\"%s\" Summarize the customer's issue in the above dialog in one sentence. \"%s\" [EOS]" % (src, tgt)
-                f.write({
+                text = "\"%s\" Summarize the customer's issue in the above dialog in one sentence. \"%s\" END" % (src, tgt)
+                _ = f.write({
                     'text': text
                 })
                 # tokens = tokenizer.tokenize(text)
 
 
+with open(input_dir + 'tweet_summ_test.csv', mode='r') as f_in:
+    lines = [line for line in csv.reader(f_in)][1:]
 
-
-
-
+with jsonlines.open(output_dir + 'test.json', 'w') as f:
+    for line in lines:
+        src, tgts = process_line(line)
+        text = "\"%s\" Summarize the customer's issue in the above dialog in one sentence." % (src)
+        _ = f.write({
+            'text': text,
+            'golds': tgts
+        })
 
