@@ -32,6 +32,7 @@ from transformers.utils.versions import require_version
 from transformers import AutoTokenizer
 from transformers import LlamaTokenizer, LlamaForCausalLM
 import pickle
+from peft import LoraConfig, TaskType, get_peft_model, PeftModel
 
 
 
@@ -207,6 +208,11 @@ def parse_args():
             "If passed, LLM loading time and RAM consumption will be benefited."
         ),
     )
+    parser.add_argument(
+        "--do_lora",
+        action="store_true",
+        help=("do parameter efficient finetuning - lora or not"),
+    )
     args = parser.parse_args()
 
 
@@ -229,9 +235,9 @@ def parse_args():
 
 def main():
     args = parse_args()
-    with open('../ps-interview_/za/args/args_llama.pkl', 'wb') as f:
+    with open('../ps-interview_/za/args/args_llama_no_trainer.pkl', 'wb') as f:
         pickle.dump(args, f)
-    # exit()
+    exit()
 
     # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
     # information sent is the one passed as arguments along with your Python/PyTorch versions.
@@ -351,13 +357,19 @@ def main():
             low_cpu_mem_usage=args.low_cpu_mem_usage,
         )
 
-
-
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.
     embedding_size = model.get_input_embeddings().weight.shape[0]
     if len(tokenizer) > embedding_size:
         model.resize_token_embeddings(len(tokenizer))
+
+    if args.do_lora:
+        peft_config = LoraConfig(
+            task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1,
+            target_modules=["q_proj", "v_proj"], bias="none",
+        )
+        model = get_peft_model(model, peft_config)
+        model.print_trainable_parameters()
 
     # Preprocessing the datasets.
     # First we tokenize all the texts.
@@ -376,40 +388,6 @@ def main():
             load_from_cache_file=not args.overwrite_cache,
             desc="Running tokenizer on dataset",
         )
-
-    # if args.block_size is None:
-    #     block_size = tokenizer.model_max_length
-    #     if block_size > 1024:
-    #         logger.warning(
-    #             "The chosen tokenizer supports a `model_max_length` that is longer than the default `block_size` value"
-    #             " of 1024. If you would like to use a longer `block_size` up to `tokenizer.model_max_length` you can"
-    #             " override this default with `--block_size xxx`."
-    #         )
-    #     block_size = 1024
-    # else:
-    #     if args.block_size > tokenizer.model_max_length:
-    #         logger.warning(
-    #             f"The block_size passed ({args.block_size}) is larger than the maximum length for the model"
-    #             f"({tokenizer.model_max_length}). Using block_size={tokenizer.model_max_length}."
-    #         )
-    #     block_size = min(args.block_size, tokenizer.model_max_length)
-
-    # Main data processing function that will concatenate all texts from our dataset and generate chunks of block_size.
-    # def group_texts(examples):
-    #     # Concatenate all texts.
-    #     concatenated_examples = {k: list(chain(*examples[k])) for k in examples.keys()}
-    #     total_length = len(concatenated_examples[list(examples.keys())[0]])
-    #     # We drop the small remainder, we could add padding if the model supported it instead of this drop, you can
-    #     # customize this part to your needs.
-    #     if total_length >= block_size:
-    #         total_length = (total_length // block_size) * block_size
-    #     # Split by chunks of max_len.
-    #     result = {
-    #         k: [t[i : i + block_size] for i in range(0, total_length, block_size)]
-    #         for k, t in concatenated_examples.items()
-    #     }
-    #     result["labels"] = result["input_ids"].copy()
-    #     return result
 
     def add_labels(examples):
         examples["labels"] = examples["input_ids"].copy()
