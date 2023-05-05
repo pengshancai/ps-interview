@@ -206,14 +206,13 @@ class DataTrainingArguments:
 def main():
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-    with open('../ps-interview_/za/args/args_llama.pkl', 'wb') as f:
+    with open(training_args.output_dir + 'args.pkl', 'wb') as f:
         args = {
             'model_args': model_args,
             'data_args': data_args,
             'training_args': training_args
         }
         pickle.dump(args, f)
-        exit()
     # Setup logging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
