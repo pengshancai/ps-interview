@@ -718,23 +718,32 @@ def main():
             result["step"] = completed_steps
             accelerator.log(result, step=completed_steps)
 
-        if args.push_to_hub and epoch < args.num_train_epochs - 1:
-            accelerator.wait_for_everyone()
-            unwrapped_model = accelerator.unwrap_model(model)
-            unwrapped_model.save_pretrained(
-                args.output_dir, is_main_process=accelerator.is_main_process, save_function=accelerator.save
-            )
-            if accelerator.is_main_process:
-                tokenizer.save_pretrained(args.output_dir)
-                repo.push_to_hub(
-                    commit_message=f"Training in progress epoch {epoch}", blocking=False, auto_lfs_prune=True
-                )
+        # if args.push_to_hub and epoch < args.num_train_epochs - 1:
+        #     accelerator.wait_for_everyone()
+        #     unwrapped_model = accelerator.unwrap_model(model)
+        #     unwrapped_model.save_pretrained(
+        #         args.output_dir, is_main_process=accelerator.is_main_process, save_function=accelerator.save
+        #     )
+        #     if accelerator.is_main_process:
+        #         tokenizer.save_pretrained(args.output_dir)
+        #         repo.push_to_hub(
+        #             commit_message=f"Training in progress epoch {epoch}", blocking=False, auto_lfs_prune=True
+        #         )
 
-        if args.checkpointing_steps == "epoch":
-            output_dir = f"epoch_{epoch}"
-            if args.output_dir is not None:
-                output_dir = os.path.join(args.output_dir, output_dir)
-            accelerator.save_state(output_dir)
+        # if args.checkpointing_steps == "epoch":
+        #     output_dir = f"epoch_{epoch}"
+        #     if args.output_dir is not None:
+        #         output_dir = os.path.join(args.output_dir, output_dir)
+        #     accelerator.save_state(output_dir)
+
+        # Save parameters per epoch
+        if args.output_dir is not None:
+            unwrapped_model = accelerator.unwrap_model(model)
+            output_dir_epoch = args.output_dir + 'epoch_%s/' % epoch
+            os.mkdir(output_dir_epoch)
+            unwrapped_model.save_pretrained(
+                output_dir_epoch, is_main_process=accelerator.is_main_process, save_function=accelerator.save
+            )
 
     if args.output_dir is not None:
         accelerator.wait_for_everyone()
