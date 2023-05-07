@@ -4,10 +4,11 @@ CUDA_VISIBLE_DEVICES=0 python run_clm.py \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
     --model_name_or_path decapoda-research/llama-7b-hf \
-    --learning_rate 2e-5 \
+    --learning_rate 5e-5 \
     --output_dir ../ps-interview_/dump/llama_1.0 \
     --num_train_epochs 5 \
     --do_lora \
     --max_length 512 \
-    --gradient_accumulation_steps 4 \
     --overwrite_cache
+
+#     --gradient_accumulation_steps 4 \

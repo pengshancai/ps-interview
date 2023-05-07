@@ -25,7 +25,7 @@ with open(result_dir + 'score.txt', 'a') as f:
     f.write('Rouge 2:\t%s\n' % np.mean(rouge2s))
     f.write('Rouge L:\t%s\n' % np.mean(rougels))
 
-# BART Score
+# BERT Score
 b_f1s = []
 for i, pred in tqdm(enumerate(results['pred'])):
     print(i)
@@ -39,4 +39,6 @@ for i, pred in tqdm(enumerate(results['pred'])):
 
 with open(result_dir + 'score.txt', 'a') as f:
     _ = f.write('BERT Score F1:\t%s\n' % np.mean(b_f1s))
+
+
 
