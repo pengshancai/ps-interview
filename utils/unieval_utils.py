@@ -4,6 +4,8 @@ from nltk import sent_tokenize
 from transformers import AutoConfig, AutoTokenizer, AutoModelForSeq2SeqLM
 from prettytable import PrettyTable
 from torch import nn
+import torch
+from tqdm import tqdm
 
 sys.path.append("..")
 
