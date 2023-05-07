@@ -574,6 +574,16 @@ def main():
                 output_dir = os.path.join(args.output_dir, output_dir)
             accelerator.save_state(output_dir)
 
+        # Save adaptor per epoch
+        if args.output_dir is not None:
+            accelerator.wait_for_everyone()
+            unwrapped_model = accelerator.unwrap_model(model)
+            output_dir_epoch = args.output_dir + 'epoch_%s/' % epoch
+            os.mkdir(output_dir_epoch)
+            unwrapped_model.save_pretrained(
+                output_dir_epoch, is_main_process=accelerator.is_main_process, save_function=accelerator.save
+            )
+
     if args.with_tracking:
         accelerator.end_training()
 
