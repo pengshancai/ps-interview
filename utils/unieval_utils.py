@@ -3,6 +3,7 @@ import numpy as np
 from nltk import sent_tokenize
 from transformers import AutoConfig, AutoTokenizer, AutoModelForSeq2SeqLM
 from prettytable import PrettyTable
+from torch import nn
 
 sys.path.append("..")
 

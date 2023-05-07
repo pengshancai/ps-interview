@@ -574,7 +574,7 @@ def main():
                 output_dir = os.path.join(args.output_dir, output_dir)
             accelerator.save_state(output_dir)
 
-        # Save adaptor per epoch
+        # Save adaptor parameters per epoch
         if args.output_dir is not None:
             accelerator.wait_for_everyone()
             unwrapped_model = accelerator.unwrap_model(model)

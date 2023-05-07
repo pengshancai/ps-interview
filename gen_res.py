@@ -86,7 +86,7 @@ def main():
         results['golds'].append(tgts)
     path = Path(args.result_dir)
     path.mkdir(parents=True)
-    with open(args.result_dir + 'results.txt', 'w') as f:
+    with open(args.result_dir + 'results.json', 'w') as f:
         json.dump(results, f)
 
 
