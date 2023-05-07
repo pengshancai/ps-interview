@@ -85,3 +85,6 @@ def main():
         for metric, scores in uni_scores.items():
             _ = f.write('UniEval %s:\t%s\n' % (metric, np.mean(scores)))
 
+
+if __name__ == "__main__":
+    main()
