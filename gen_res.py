@@ -81,7 +81,7 @@ def main():
             inputs = tokenizer(src, return_tensors='pt').to(device)
         else:
             inputs = tokenizer(src + "Summarize the customer\'s issue in the above dialog in one sentence.", return_tensors='pt').to(device)
-        outputs = model.generate(**inputs, max_length=1024)
+        outputs = model.generate(**inputs, max_length=1024, topk=5)
         pred = tokenizer.decode(outputs.cpu().numpy()[0], skip_special_tokens=True)
         if not 'bart' in args.dump_dir:
             pred = cut_results(src, pred)
