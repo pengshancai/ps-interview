@@ -89,7 +89,7 @@ CUDA_VISIBLE_DEVICES=0 python eval_res.py \
 CUDA_VISIBLE_DEVICES=0 python gen_res.py \
     --dump_dir decapoda-research/llama-7b-hf \
     --peft_dir ../ps-interview_/dump/llama_1.1/epoch_3 \
-    --result_dir ../ps-interview_/results/llama_1.1/epoch_3/attempt2 \
+    --result_dir ../ps-interview_/results/llama_1.1/epoch_3/attempt2/ \
     --data_path ../ps-interview_/data/processed_clm/test.json
 
 CUDA_VISIBLE_DEVICES=0 python eval_res.py \
@@ -98,7 +98,7 @@ CUDA_VISIBLE_DEVICES=0 python eval_res.py \
 CUDA_VISIBLE_DEVICES=0 python gen_res.py \
     --dump_dir decapoda-research/llama-7b-hf \
     --peft_dir ../ps-interview_/dump/llama_1.1/epoch_3 \
-    --result_dir ../ps-interview_/results/llama_1.1/epoch_3/attempt3 \
+    --result_dir ../ps-interview_/results/llama_1.1/epoch_3/attempt3/ \
     --data_path ../ps-interview_/data/processed_clm/test.json
 
 CUDA_VISIBLE_DEVICES=0 python eval_res.py \
@@ -107,7 +107,7 @@ CUDA_VISIBLE_DEVICES=0 python eval_res.py \
 CUDA_VISIBLE_DEVICES=0 python gen_res.py \
     --dump_dir decapoda-research/llama-7b-hf \
     --peft_dir ../ps-interview_/dump/llama_1.1/epoch_3 \
-    --result_dir ../ps-interview_/results/llama_1.1/epoch_3/attempt4 \
+    --result_dir ../ps-interview_/results/llama_1.1/epoch_3/attempt4/ \
     --data_path ../ps-interview_/data/processed_clm/test.json
 
 CUDA_VISIBLE_DEVICES=0 python eval_res.py \
