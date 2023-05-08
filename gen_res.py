@@ -9,6 +9,7 @@ from transformers import (
     AutoModelForCausalLM,
 )
 from transformers import AutoTokenizer
+from transformers import BartForConditionalGeneration
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from peft import PeftModel
 from tqdm import tqdm
@@ -51,6 +52,9 @@ def main():
     if 'llama' in args.dump_dir:
         tokenizer = LlamaTokenizer.from_pretrained(args.dump_dir)
         model = LlamaForCausalLM.from_pretrained(args.dump_dir).to(device)
+    elif 'bart' in args.dump_dir:
+        tokenizer = AutoTokenizer.from_pretrained(args.dump_dir)
+        model = BartForConditionalGeneration.from_pretrained(args.dump_dir)
     else:
         tokenizer = AutoTokenizer.from_pretrained(args.dump_dir)
         model = AutoModelForCausalLM.from_pretrained(args.dump_dir)
@@ -85,7 +89,7 @@ def main():
         results['pred'].append(pred)
         results['golds'].append(tgts)
     path = Path(args.result_dir)
-    path.mkdir(parents=True)
+    path.mkdir(parents=True, exist_ok=True)
     with open(args.result_dir + 'results.json', 'w') as f:
         json.dump(results, f)
 
