@@ -42,3 +42,20 @@ Please first prepare your OpenAI key and replace it in the code, then do
 ```
 python run_gpt3.py
 ```
+
+## Generate results (BART & LLaMA)
+```
+python gen_res.py \
+    --dump_dir path_to_dumo_dir_or_model_name \
+    --peft_dir path_to_peft_dir  \
+    --result_dir path_to_result_dir \
+    --data_path path_to_test.json
+```
+
+## Run evaluation
+```
+python eval_res.py \
+    --result_dir path_to_result_dir \
+```
+
+All examplar shell commands are given in the foler ```shell```
